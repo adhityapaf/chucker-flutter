@@ -5,6 +5,7 @@ import 'package:chucker_flutter/src/helpers/shared_preferences_manager.dart';
 import 'package:chucker_flutter/src/models/api_response.dart';
 import 'package:chucker_flutter/src/view/helper/chucker_ui_helper.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 ///[ChuckerDioInterceptor] adds support for `chucker_flutter` in [Dio] library.
 class ChuckerDioInterceptor extends Interceptor {
@@ -86,31 +87,37 @@ class ChuckerDioInterceptor extends Interceptor {
   }
 
   Future<void> _saveError(DioError response) async {
-    await SharedPreferencesManager.getInstance().addApiResponse(
-      ApiResponse(
-        body: {'data': jsonDecode(response.response.toString())},
-        path: response.requestOptions.path,
-        baseUrl: response.requestOptions.baseUrl,
-        method: response.requestOptions.method,
-        statusCode: response.response?.statusCode ?? -1,
-        connectionTimeout: response.requestOptions.connectTimeout,
-        contentType: response.requestOptions.contentType,
-        headers: response.requestOptions.headers.toString(),
-        queryParameters: response.requestOptions.queryParameters.toString(),
-        receiveTimeout: response.requestOptions.receiveTimeout,
-        request: {
-          'request': _separateFileObjects(response.requestOptions).data
-        },
-        requestSize: 2,
-        requestTime: _requestTime,
-        responseSize: 2,
-        responseTime: DateTime.now(),
-        responseType: response.requestOptions.responseType.name,
-        sendTimeout: response.requestOptions.sendTimeout,
-        checked: false,
-        clientLibrary: 'Dio',
-      ),
-    );
+    try {
+      await SharedPreferencesManager.getInstance().addApiResponse(
+        ApiResponse(
+          body: {'data': jsonDecode(response.response.toString())},
+          path: response.requestOptions.path,
+          baseUrl: response.requestOptions.baseUrl,
+          method: response.requestOptions.method,
+          statusCode: response.response?.statusCode ?? -1,
+          connectionTimeout: response.requestOptions.connectTimeout,
+          contentType: response.requestOptions.contentType,
+          headers: response.requestOptions.headers.toString(),
+          queryParameters: response.requestOptions.queryParameters.toString(),
+          receiveTimeout: response.requestOptions.receiveTimeout,
+          request: {
+            'request': _separateFileObjects(response.requestOptions).data
+          },
+          requestSize: 2,
+          requestTime: _requestTime,
+          responseSize: 2,
+          responseTime: DateTime.now(),
+          responseType: response.requestOptions.responseType.name,
+          sendTimeout: response.requestOptions.sendTimeout,
+          checked: false,
+          clientLibrary: 'Dio',
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('[ChuckerDioInterceptor - _saveError] error: $e');
+      }
+    }
   }
 
   RequestOptions _separateFileObjects(RequestOptions request) {
