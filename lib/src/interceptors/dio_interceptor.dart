@@ -87,37 +87,40 @@ class ChuckerDioInterceptor extends Interceptor {
   }
 
   Future<void> _saveError(DioError response) async {
+    dynamic data;
     try {
-      await SharedPreferencesManager.getInstance().addApiResponse(
-        ApiResponse(
-          body: {'data': jsonDecode(response.response.toString())},
-          path: response.requestOptions.path,
-          baseUrl: response.requestOptions.baseUrl,
-          method: response.requestOptions.method,
-          statusCode: response.response?.statusCode ?? -1,
-          connectionTimeout: response.requestOptions.connectTimeout,
-          contentType: response.requestOptions.contentType,
-          headers: response.requestOptions.headers.toString(),
-          queryParameters: response.requestOptions.queryParameters.toString(),
-          receiveTimeout: response.requestOptions.receiveTimeout,
-          request: {
-            'request': _separateFileObjects(response.requestOptions).data
-          },
-          requestSize: 2,
-          requestTime: _requestTime,
-          responseSize: 2,
-          responseTime: DateTime.now(),
-          responseType: response.requestOptions.responseType.name,
-          sendTimeout: response.requestOptions.sendTimeout,
-          checked: false,
-          clientLibrary: 'Dio',
-        ),
-      );
+      data = jsonDecode(response.response.toString());
     } catch (e) {
       if (kDebugMode) {
         print('[ChuckerDioInterceptor - _saveError] error: $e');
       }
+      data = response.response.toString();
     }
+    await SharedPreferencesManager.getInstance().addApiResponse(
+      ApiResponse(
+        body: {'data': data},
+        path: response.requestOptions.path,
+        baseUrl: response.requestOptions.baseUrl,
+        method: response.requestOptions.method,
+        statusCode: response.response?.statusCode ?? -1,
+        connectionTimeout: response.requestOptions.connectTimeout,
+        contentType: response.requestOptions.contentType,
+        headers: response.requestOptions.headers.toString(),
+        queryParameters: response.requestOptions.queryParameters.toString(),
+        receiveTimeout: response.requestOptions.receiveTimeout,
+        request: {
+          'request': _separateFileObjects(response.requestOptions).data
+        },
+        requestSize: 2,
+        requestTime: _requestTime,
+        responseSize: 2,
+        responseTime: DateTime.now(),
+        responseType: response.requestOptions.responseType.name,
+        sendTimeout: response.requestOptions.sendTimeout,
+        checked: false,
+        clientLibrary: 'Dio',
+      ),
+    );
   }
 
   RequestOptions _separateFileObjects(RequestOptions request) {
